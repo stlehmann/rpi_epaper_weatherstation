@@ -5,7 +5,7 @@ import sys
 import datetime as dt
 import time
 from PIL import Image, ImageDraw, ImageFont
-import epd7in5
+
 
 
 WIDTH = 640  # width of the display in pixels
@@ -16,11 +16,7 @@ OWM_LOCATION = os.environ["OWM_LOCATION"]
 OWM_API_KEY = os.environ["OWM_API_KEY"]  # open weather map API key
 
 
-epd = epd7in5.EPD()
-epd.init()
-
-
-while 1:
+def draw_image():
     img = Image.new('1', (WIDTH, HEIGHT), 1)
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype('/usr/share/fonts/truetype/freefont/FreeMonoBold.ttf', 48)
@@ -35,23 +31,51 @@ while 1:
     resp = requests.get(OWM_URL_TEMPLATE.format(location=OWM_LOCATION, appid=OWM_API_KEY))
     if resp.status_code == requests.codes.ok:
         w_data = resp.json()
-        
+
         temp_C = w_data["main"]["temp"]
         hum_pct = w_data["main"]["humidity"]
         press_hPa = w_data["main"]["pressure"]
-    
+
         # add weather info to the image
-        draw.text((190, 130), "{:.1f}°C".format(temp_C), font=font_lg)
-    
+        draw.text((180, 90), "{:.1f}°C".format(temp_C), font=font_lg)
+
         hum_img = Image.open("humidity.bmp", "r")
-        draw.bitmap((35, 265), hum_img)
-        draw.text((100, 280), "{:.0f}%".format(hum_pct), font=font)
+        draw.bitmap((35, 295), hum_img)
+        draw.text((100, 310), "{:.0f}%".format(hum_pct), font=font)
 
         pres_img = Image.open("pressure.bmp", "r")
-        draw.bitmap((315, 265), pres_img)
-        draw.text((380, 280), "{:.0f}hPa".format(press_hPa), font=font)
+        draw.bitmap((355, 295), pres_img)
+        draw.text((420, 310), "{:.0f}hPa".format(press_hPa), font=font)
 
-    # display the image on the epaper display
-    epd.display_frame(epd.get_frame_buffer(img))
-    time.sleep(SLEEP_TIME_S)
+        # weather icon
+        try:
+            icon_code = w_data["weather"][0]["icon"]
+            icon_code = "13d"
+            icon = Image.open(f"icons/{icon_code}.bmp")
+            draw.bitmap((240, 170), icon)
 
+        except (IndexError, KeyError):
+            print("Error reading weather id.")
+
+    return img
+
+
+def display_loop():
+    import epd7in5
+    epd = epd7in5.EPD()
+    epd.init()
+
+    while 1:
+        # display the image on the epaper display
+        epd.display_frame(epd.get_frame_buffer(draw_image()))
+        time.sleep(SLEEP_TIME_S)
+
+
+def save_image():
+    img = draw_image()
+    img.save("output.bmp")
+
+
+if __name__ == "__main__":
+    # save_image()
+    display_loop()
