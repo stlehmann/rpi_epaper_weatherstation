@@ -50,7 +50,6 @@ def draw_image():
         # weather icon
         try:
             icon_code = w_data["weather"][0]["icon"]
-            icon_code = "13d"
             icon = Image.open("icons/{icon_code}.bmp".format(icon_code=icon_code))
             draw.bitmap((240, 170), icon)
 
