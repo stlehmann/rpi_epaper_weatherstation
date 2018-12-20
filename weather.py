@@ -54,7 +54,7 @@ def draw_image():
             icon = Image.open("icons/{icon_code}.bmp".format(icon_code=icon_code))
             draw.bitmap((240, 170), icon)
 
-        except (IndexError, KeyError):
+        except Exception:
             print("Error reading weather id.")
 
     return img
