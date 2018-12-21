@@ -153,5 +153,5 @@ def save_image():
 
 
 if __name__ == "__main__":
-    save_image()
-    # display_loop()
+    # save_image()
+    display_loop()
