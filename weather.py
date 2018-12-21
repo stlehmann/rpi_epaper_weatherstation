@@ -96,15 +96,15 @@ def draw_image():
 
     if weather_data is not None:
         # add weather info to the image
-        draw.text((330, 80), "{:.1f}°C".format(weather_data.temp_c), font=font_lg)
+        draw.text((280, 80), "{:3.1f}°C".format(weather_data.temp_c), font=font_lg)
 
         hum_img = Image.open("humidity.bmp", "r")
         draw.bitmap((35, 295), hum_img)
         draw.text((100, 310), "{:.0f}%".format(weather_data.hum_pct), font=font)
 
         pres_img = Image.open("pressure.bmp", "r")
-        draw.bitmap((355, 295), pres_img)
-        draw.text((420, 310), "{:.0f}hPa".format(weather_data.press_hpa), font=font)
+        draw.bitmap((345, 295), pres_img)
+        draw.text((410, 310), "{:.0f}hPa".format(weather_data.press_hpa), font=font)
 
         # weather icon
         try:
