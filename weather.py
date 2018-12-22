@@ -26,7 +26,7 @@ OWM_URL_TEMPLATE = (
 
 
 WeatherData = namedtuple("WeatherData", "temp_c hum_pct press_hpa icon")
-ForecastData = namedtuple("ForecastData", "dt temp_c")
+ForecastData = namedtuple("ForecastData", "dt temp_c icon")
 
 
 def get_weather_data() -> Optional[WeatherData]:
@@ -66,11 +66,22 @@ def get_forecast_data() -> Optional[List[ForecastData]]:
     items = [json["list"][i] for i in range(1, 7, 2)]
     data = [
         ForecastData(
-            format(dt.datetime.fromtimestamp(item["dt"]), "%Hh"), item["main"]["temp"]
+            format(dt.datetime.fromtimestamp(item["dt"]), "%Hh"),
+            item["main"]["temp"],
+            item["weather"][0]["icon"],
         )
         for item in items
     ]
     return data
+
+
+def get_icon(icon_code, max_size=None):
+    """Get an icon by the given icon code."""
+    icon = Image.open("icons/{0}.bmp".format(icon_code))
+
+    if max_size is not None:
+        icon.thumbnail((max_size, max_size))
+    return icon
 
 
 def draw_image():
@@ -97,21 +108,21 @@ def draw_image():
 
     if weather_data is not None:
         # add weather info to the image
-        draw.text((280, 80), "{:3.1f}°C".format(weather_data.temp_c), font=font_lg)
+        draw.text((280, 70), "{:3.1f}°C".format(weather_data.temp_c), font=font_lg)
 
         hum_img = Image.open("humidity.bmp", "r")
-        draw.bitmap((35, 295), hum_img)
-        draw.text((100, 310), "{:.0f}%".format(weather_data.hum_pct), font=font)
+        draw.bitmap((40, 325), hum_img)
+        draw.text((80, 330), "{:.0f}%".format(weather_data.hum_pct), font=font)
 
         pres_img = Image.open("pressure.bmp", "r")
-        draw.bitmap((345, 295), pres_img)
-        draw.text((410, 310), "{:.0f}hPa".format(weather_data.press_hpa), font=font)
+        draw.bitmap((365, 325), pres_img)
+        draw.text((410, 330), "{:.0f}hPa".format(weather_data.press_hpa), font=font)
 
         # weather icon
         try:
             icon_code = weather_data.icon
             icon = Image.open("icons/{icon_code}.bmp".format(icon_code=icon_code))
-            draw.bitmap((20, 60), icon)
+            draw.bitmap((20, 50), icon)
 
         except Exception:
             print("Error: No icon with id {0}.".format(icon_code))
@@ -122,14 +133,20 @@ def draw_image():
         fc_dat = None
 
     if fc_dat is not None:
-        draw.text((70, 200), fc_dat[0].dt, font=font_sm)
-        draw.text((40, 230), "{:.0f}°C".format(fc_dat[0].temp_c), font=font)
+        x = 140
+        draw.text((x, 180), fc_dat[0].dt, font=font_sm)
+        draw.text((x-30, 210), "{:.0f}°C".format(fc_dat[0].temp_c), font=font)
+        draw.bitmap((x-20, 240), get_icon(fc_dat[0].icon, 80))
 
-        draw.text((325, 200), fc_dat[1].dt, font=font_sm)
-        draw.text((295, 230), "{:.0f}°C".format(fc_dat[1].temp_c), font=font)
+        x += 150
+        draw.text((x, 180), fc_dat[1].dt, font=font_sm)
+        draw.text((x-30, 210), "{:.0f}°C".format(fc_dat[1].temp_c), font=font)
+        draw.bitmap((x-20, 240), get_icon(fc_dat[1].icon, 80))
 
-        draw.text((550, 200), fc_dat[2].dt, font=font_sm)
-        draw.text((530, 230), "{:.0f}°C".format(fc_dat[2].temp_c), font=font)
+        x += 150
+        draw.text((x, 180), fc_dat[2].dt, font=font_sm)
+        draw.text((x-30, 210), "{:.0f}°C".format(fc_dat[2].temp_c), font=font)
+        draw.bitmap((x-20, 240), get_icon(fc_dat[2].icon, 80))
 
     return img
 
