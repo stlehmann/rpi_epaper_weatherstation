@@ -1,6 +1,7 @@
 """Module for displaying weather data on a Waveshare EPaper display."""
 
 import os
+import sys
 import requests
 import datetime as dt
 import time
@@ -153,5 +154,7 @@ def save_image():
 
 
 if __name__ == "__main__":
-    # save_image()
-    display_loop()
+    if "-o" in sys.argv:
+        save_image()
+    else:
+        display_loop()
